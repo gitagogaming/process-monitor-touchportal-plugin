@@ -67,7 +67,7 @@ ADDITIONAL_PYINSTALLER_ARGS = [
     "--noconsole"
 ]
 
- ADDITIONAL_TPPSDK_ARGS = []
+ADDITIONAL_TPPSDK_ARGS = []
 
 # validateBuild()
 
