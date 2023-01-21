@@ -67,6 +67,8 @@ ADDITIONAL_PYINSTALLER_ARGS = [
     "--noconsole"
 ]
 
+ ADDITIONAL_TPPSDK_ARGS = []
+
 # validateBuild()
 
 if __name__ == "__main__":
