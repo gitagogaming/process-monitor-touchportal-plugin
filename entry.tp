@@ -1,0 +1,80 @@
+{
+  "sdk": 6,
+  "version": 100,
+  "name": "Process Checker",
+  "id": "tp.plugin.process_checker",
+  "configuration": {
+    "colorDark": "#2f2f2f",
+    "colorLight": "#919191"
+  },
+  "plugin_start_cmd": "%TP_PLUGIN_FOLDER%Process_Checker\\Process_Checker.exe",
+  "plugin_start_cmd_linux": "sh %TP_PLUGIN_FOLDER%Process_Checker//start.sh Process_Checker",
+  "plugin_start_cmd_mac": "sh %TP_PLUGIN_FOLDER%Process_Checker//start.sh Process_Checker",
+  "categories": [
+    {
+      "id": "tp.plugin.process_checker.main",
+      "name": "Process Checker",
+      "imagepath": "%TP_PLUGIN_FOLDER%Process_Checker\\process_checker_icon.png",
+      "actions": [
+        {
+          "id": "tp.plugin.process_checker.act.check_process",
+          "name": "Check If Process is Running",
+          "prefix": "Process Checker",
+          "type": "communicate",
+          "format": "Get Process Status {$tp.plugin.process_checker.act.process_name$} - Every {$tp.plugin.process_checker.act.process_name.checktime$} Seconds",
+          "tryInline": true,
+          "data": [
+            {
+              "id": "tp.plugin.process_checker.act.process_name",
+              "type": "text",
+              "label": "Text",
+              "default": "TouchPortal.exe"
+            },
+            {
+              "id": "tp.plugin.process_checker.act.process_name.checktime",
+              "type": "choice",
+              "label": "check every x seconds",
+              "default": "0",
+              "valueChoices": [
+                "0",
+                "5",
+                "10",
+                "15",
+                "30",
+                "45",
+                "60",
+                "120",
+                "240"
+              ]
+            }
+          ]
+        }
+      ],
+      "states": [
+        {
+          "id": "tp.plugin.process_checker.state.current_text_name_style",
+          "type": "text",
+          "desc": "Color Picker: Text Name Style",
+          "default": ""
+        },
+        {
+          "id": "tp.plugin.process_checker.state.last_mouse_x",
+          "type": "text",
+          "desc": "Color Picker: Last Mouse Location - X",
+          "default": ""
+        }
+      ],
+      "events": [],
+      "connectors": []
+    },
+    {
+      "id": "tp.plugin.process_checker.current",
+      "name": "Process Checker | Category 1",
+      "actions": [],
+      "states": [],
+      "events": [],
+      "connectors": []
+    }
+  ],
+  "settings": []
+}
