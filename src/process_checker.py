@@ -2,6 +2,8 @@
 # Created by @Gitago for TouchPortal
 # Jan, 2023
 
+## If users ever want multiple PIDS for the .exe we can make an action take it as an argument and then when user selects .exe it will show all the PIDs for that .exe and user can select which one they want to monitor
+
 
 ## BUGS
 ## when process is checked with a 0 timer it is still counting as an active monitor although its only checking it once and stopping..
@@ -40,10 +42,6 @@ class ProcessMonitorData:
     def add_to_dict(self, key, value):
         self.process_monitor_dict[key] = value
 
-PM = ProcessMonitorData()
-#process_monitor_choiceList = []
-#process_monitor_dict = {}
-
 class ProcessChecker:
     def __init__(self, process_name):
         self.process_name = process_name
@@ -62,21 +60,16 @@ class ProcessChecker:
     def the_task(self, process_name, the_process):
         process_checked = self.is_running()
         
-        
-     #   global process_monitor_choiceList
-        
-      #  print("This is process checked the is_running stuff", process_checked)
-        
         if process_checked == False:
             ## Setting Status to blank so it will trigger every time its checked
             
-            TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.status", description=f"PM | {self.process_name} - status", value="", parentGroup=str(self.process_name))
+            TPC.TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.status", description=f"PM | {self.process_name} - status", value="", parentGroup=str(self.process_name))
             
             for x in ['pid', 'username', 'cpu_percent', 'memory_percent', 'cmdline', 'create_time']:
-                TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.{x}", description=f"PM | {self.process_name} - {x}", value="", parentGroup=str(self.process_name))
+                TPC.TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.{x}", description=f"PM | {self.process_name} - {x}", value="", parentGroup=str(self.process_name))
             
             # Updating Status to "Closed" since the process appears to not be running
-            TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.status", description=f"PM | {self.process_name} - status", value="Closed", parentGroup=str(self.process_name))
+            TPC.TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.status", description=f"PM | {self.process_name} - status", value="Closed", parentGroup=str(self.process_name))
             
         if process_checked:
             PM.add_to_dict(self.process_name, the_process)
@@ -87,15 +80,15 @@ class ProcessChecker:
             # Checking to see if the Process monitor Choice List is the same, if so we dont update it
             if PM.process_monitor_choiceList != the_list:
                 ## submitted a PR for this to be added to the API by default
-                TPClient.choiceUpdate(choiceId=PLUGIN_ID + ".act.process_name.stop", values=the_list)
+                TPC.TPClient.choiceUpdate(choiceId=PLUGIN_ID + ".act.process_name.stop", values=the_list)
 
             PM.add_to_choiceList(the_list)
            # process_monitor_choiceList = the_list
             
             ## update a state showing how many values are in the list minus the "ALL" value
-            TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(the_list) - 1))
+            TPC.TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(the_list) - 1))
             
-            g_log.debug(f"{the_process.process_name} is running")
+            TPC.g_log.debug(f"{the_process.process_name} is running")
             
             for x in process_checked:
                 if x == 'memory_percent':
@@ -110,7 +103,7 @@ class ProcessChecker:
                         process_checked[x] = create_time_datetime.strftime("%m/%d/%Y [%I:%M:%S %p]")
                         
                 ## use a thread to create sttes as fast as possible
-                TPClient.createState(stateId=PLUGIN_ID + f".state.{the_process.process_name}.process_info.{x}", description=f"PM | {the_process.process_name} - {x}", value=str(process_checked.get(x, "None")), parentGroup=str(the_process.process_name))
+                TPC.TPClient.createState(stateId=PLUGIN_ID + f".state.{the_process.process_name}.process_info.{x}", description=f"PM | {the_process.process_name} - {x}", value=str(process_checked.get(x, "None")), parentGroup=str(the_process.process_name))
                 
                 
     def is_running(self):
@@ -132,7 +125,7 @@ class ProcessChecker:
     
     def check_continuously(self, interval, process_name, the_process):
         while self.should_continue:
-            g_log.debug("Checking if " + self.process_name + " is running")
+            TPC.g_log.debug("Checking if " + self.process_name + " is running")
            
             self.the_task(process_name = process_name, the_process=the_process)
             time.sleep(interval)
@@ -145,26 +138,49 @@ class ProcessChecker:
 
 
 
-### The TP Client
-try:
-    TPClient = TP.Client(
-        pluginId = PLUGIN_ID,
-        sleepPeriod = 0.05,
-        autoClose = True,
-        checkPluginId = True,
-        maxWorkers = 4,
-        updateStatesOnBroadcast = False,
-    )
-except Exception as e:
-    sys.exit(f"Could not create TP Client, exiting. Error was:\n{repr(e)}")
+##  ### The TP Client
+##  try:
+##      TPClient = TP.Client(
+##          pluginId = PLUGIN_ID,
+##          sleepPeriod = 0.05,
+##          autoClose = True,
+##          checkPluginId = True,
+##          maxWorkers = 4,
+##          updateStatesOnBroadcast = False,
+##      )
+##  except Exception as e:
+##      sys.exit(f"Could not create TP Client, exiting. Error was:\n{repr(e)}")
+class TPClientClass:
+    def __init__(self, pluginId, sleepPeriod=0.05, autoClose=True, checkPluginId=True, maxWorkers=4, updateStatesOnBroadcast=False):
+        self.pluginId = pluginId
+        self.sleepPeriod = sleepPeriod
+        self.autoClose = autoClose
+        self.checkPluginId = checkPluginId
+        self.maxWorkers = maxWorkers
+        self.updateStatesOnBroadcast = updateStatesOnBroadcast
+        try:
+            self.TPClient = TP.Client(
+                pluginId=self.pluginId,
+                sleepPeriod=self.sleepPeriod,
+                autoClose=self.autoClose,
+                checkPluginId=self.checkPluginId,
+                maxWorkers=self.maxWorkers,
+                updateStatesOnBroadcast=self.updateStatesOnBroadcast
+            )
+            self.g_log = getLogger()
+        except Exception as e:
+            sys.exit(f"Could not create TP Client, exiting. Error was:\n{repr(e)}")
 
+
+
+TPC = TPClientClass(PLUGIN_ID)
 
 # Crate the global logger
-g_log = getLogger()
+#g_log = getLogger()
 
 
 
-@TPClient.on(TP.TYPES.onNotificationOptionClicked)
+@TPC.TPClient.on(TP.TYPES.onNotificationOptionClicked)
 def check_noti(data):
     if data['optionId'] == PLUGIN_ID+ '.update.download':
         github_check = TP.Tools.updateCheck("GitagoGaming",GITHUB_URL)
@@ -173,31 +189,30 @@ def check_noti(data):
 
 
 
-@TPClient.on(TP.TYPES.onConnect)
+@TPC.TPClient.on(TP.TYPES.onConnect)
 def onConnect(data):
-    g_log.info(f"Connected to TP v{data.get('tpVersionString', '?')}, plugin v{data.get('pluginVersion', '?')}.")
-    g_log.debug(f"Connection: {data}")
+    TPC.g_log.info(f"Connected to TP v{data.get('tpVersionString', '?')}, plugin v{data.get('pluginVersion', '?')}.")
+    TPC.g_log.debug(f"Connection: {data}")
     if settings := data.get('settings'):
         handleSettings(settings, True)
         
     plugin_update_check(data)
-    TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue="0")
+    TPC.TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue="0")
         
 
 
-@TPClient.on(TP.TYPES.onSettingUpdate)
+@TPC.TPClient.on(TP.TYPES.onSettingUpdate)
 def onSettingUpdate(data):
-    g_log.debug(f"Settings: {data}")
+    TPC.g_log.debug(f"Settings: {data}")
     if (settings := data.get('values')):
         handleSettings(settings, False)
 
 
 
 
-@TPClient.on(TP.TYPES.onAction)
+@TPC.TPClient.on(TP.TYPES.onAction)
 def onAction(data):
-  #  global process_monitor_dict
-    g_log.debug(f"Action: {data}")
+    TPC.g_log.debug(f"Action: {data}")
     
     
     if not (action_data := data.get('data')) or not (aid := data.get('actionId')):
@@ -211,7 +226,7 @@ def onAction(data):
                 the_process = ProcessChecker(data['data'][0]['value'])
                 the_process.the_task(process_name=data['data'][0]['value'], the_process=the_process)
             else:
-                g_log.info('Checking every ' + str(data['data'][1]['value']) + ' seconds for ' + data['data'][0]['value'])
+                TPC.g_log.info('Checking every ' + str(data['data'][1]['value']) + ' seconds for ' + data['data'][0]['value'])
                 the_process = ProcessChecker(data['data'][0]['value']) 
                 
                 if data['data'][0]['value'] not in PM.process_monitor_dict.keys():
@@ -228,21 +243,21 @@ def onAction(data):
         try:
             if the_process =="ALL":
                 for x in PM.process_monitor_dict:
-                    g_log.info(f"Stopping the process monitor for: {x}")
+                    TPC.g_log.info(f"Stopping the process monitor for: {x}")
                     if x != "ALL":
                         PM.process_monitor_dict[x].stop()
-                        g_log.info(f"Stopping the process monitor for: {x}")
+                        TPC.g_log.info(f"Stopping the process monitor for: {x}")
                         
                 PM.process_monitor_dict = {}
             else:
                 PM.process_monitor_dict[the_process].stop()
                 ## delete the key from the dict
-                g_log.info(f"Stopping the process monitor for: {the_process}")
+                TPC.g_log.info(f"Stopping the process monitor for: {the_process}")
                 PM.process_monitor_dict.pop(the_process)
                 
-            TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(PM.process_monitor_dict.keys())))
+            TPC.TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(PM.process_monitor_dict.keys())))
         except Exception as e:
-            g_log.error(f"Error stopping the process: {e}")
+            TPC.g_log.error(f"Error stopping the process: {e}")
     
 
 
@@ -268,7 +283,7 @@ def plugin_update_check(data):
             r = requests.get(f"https://api.github.com/repos/GitagoGaming/{GITHUB_URL}/contents/recent_patchnotes.txt")
             message = base64.b64decode(r.json()['content']).decode('ascii')
             
-            TPClient.showNotification(
+            TPC.TPClient.showNotification(
                     notificationId=PLUGIN_ID + ".update.check",
                     title=f"{PLUGIN_NAME} Plugin {github_check} is available",
                     msg=f"A new version of {PLUGIN_NAME} is available and ready to Download. This may include Bug Fixes and or New Features\n\nPatch Notes\n{message} ",
@@ -277,27 +292,15 @@ def plugin_update_check(data):
                     "title":"Click to Update!"
                     }])
     except Exception as e:
-        g_log.error("[UPDATE CHECK] Something went wrong checking update", e)
+        TPC.g_log.error("[UPDATE CHECK] Something went wrong checking update", e)
 
 
 
 
 # Shutdown handler
-@TPClient.on(TP.TYPES.onShutdown)
+@TPC.TPClient.on(TP.TYPES.onShutdown)
 def onShutdown(data):
-    g_log.info('Received shutdown event from TP Client.')
-
-
-
-
-
-
-
-
-
-
-
-
+    TPC.g_log.info('Received shutdown event from TP Client.')
 
 
 
@@ -307,7 +310,7 @@ def onShutdown(data):
 
 ## The Main + Logging System
 def main():
-    global TPClient, g_log
+    global g_log
     ret = 0  # sys.exit() value
 
     # handle CLI arguments
@@ -329,7 +332,7 @@ def main():
     # set up logging
     if opts.q:
         # no logging at all
-        g_log.addHandler(NullHandler())
+        TPC.g_log.addHandler(NullHandler())
     else:
         # set up pretty log formatting (similar to TP format)
         fmt = Formatter(
@@ -337,42 +340,43 @@ def main():
             datefmt="%H:%M:%S", style="{"
         )
         # set the logging level
-        if   opts.d: g_log.setLevel(DEBUG)
-        elif opts.w: g_log.setLevel(WARNING)
-        else:        g_log.setLevel(INFO)
+        if   opts.d: TPC.g_log.setLevel(DEBUG)
+        elif opts.w: TPC.g_log.setLevel(WARNING)
+        else:        TPC.g_log.setLevel(INFO)
         # set up log destination (file/stdout)
         if opts.l:
             try:
                 # note that this will keep appending to any existing log file
                 fh = FileHandler(str(opts.l))
                 fh.setFormatter(fmt)
-                g_log.addHandler(fh)
+                TPC.g_log.addHandler(fh)
             except Exception as e:
                 opts.s = True
                 print(f"Error while creating file logger, falling back to stdout. {repr(e)}")
         #if not opts.l or opts.s:
         #    sh = StreamHandler(sys.stdout)
         #    sh.setFormatter(fmt)
-        #    g_log.addHandler(sh)
+        #    TPC.g_log.addHandler(sh)
 
 
     try:
-        TPClient.connect()
-        g_log.info('TP Client closed.')
+        TPC.TPClient.connect()
+        TPC.g_log.info('TP Client closed.')
     except KeyboardInterrupt:
-        g_log.warning("Caught keyboard interrupt, exiting.")
+        TPC.g_log.warning("Caught keyboard interrupt, exiting.")
     except Exception:
         from traceback import format_exc
-        g_log.error(f"Exception in TP Client:\n{format_exc()}")
+        TPC.g_log.error(f"Exception in TP Client:\n{format_exc()}")
         ret = -1
     finally:
-        TPClient.disconnect()
+        TPC.TPClient.disconnect()
 
-    del TPClient
+    del TPC.TPClient
 
-   # g_log.info(f"{TP_PLUGIN_INFO['name']} stopped.")
+   # TPC.g_log.info(f"{TP_PLUGIN_INFO['name']} stopped.")
     return ret
 
 
 if __name__ == "__main__":
+    PM = ProcessMonitorData()
     sys.exit(main())
