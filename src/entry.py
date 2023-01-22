@@ -1,14 +1,13 @@
-#entry.py
+## Entry.py - Process Monitor
 
 
-## Entry.py - ColorPicker
 
-
-__version__ = 1.5
+__version__ = 1.6
 PLUGIN_ID = "tp.plugin.process_monitor"
 PLUGIN_NAME = "Process_Monitor"
 
-# Basic plugin metadata
+
+
 TP_PLUGIN_INFO = {
     'sdk': 6,
     'version': int(float(__version__) * 100),  # TP only recognizes integer version numberstopo
@@ -27,7 +26,7 @@ TP_PLUGIN_INFO = {
 
 
 TP_PLUGIN_SETTINGS = {
-   #'example': {
+   #'Color Names': {
    #    'name': "Color Names - Can be changed via plugin actions",
    #    'type': "text",
    #    'default': "Basic",
@@ -36,7 +35,6 @@ TP_PLUGIN_SETTINGS = {
    #}
 }
 
-# This example only uses one Category for actions/etc., but multiple categories are supported also.
 TP_PLUGIN_CATEGORIES = {
     "main": {
         'id': PLUGIN_ID + ".main",
@@ -50,7 +48,8 @@ TP_PLUGIN_CATEGORIES = {
                 
 }
 
-# Action(s) which this plugin supports.
+
+
 TP_PLUGIN_ACTIONS = {
     'Process Monitor': {
         'category': "main",
@@ -115,7 +114,8 @@ TP_PLUGIN_STATES = {
     }
 }
 
-# Plugin Event(s).
+
+
 TP_PLUGIN_EVENTS = {}
 
 
@@ -126,27 +126,3 @@ TP_PLUGIN_EVENTS = {}
 
 
 
-
-
-
-
-
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtGui import QPixmap
-
-app = QtWidgets.QApplication([])
-window = QtWidgets.QMainWindow()
-
-view = QtWidgets.QGraphicsView(window)
-scene = QtWidgets.QGraphicsScene()
-pixmap = QPixmap("C:\\Users\\dbcoo\\Downloads\\night-light.png")
-scene.addPixmap(pixmap)
-view.setScene(scene)
-
-window.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint | QtCore.Qt.WindowType.WindowTransparentForInput)
-window.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-#window.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
-window.setWindowOpacity(0.5)
-window.setCentralWidget(view)
-window.showFullScreen()
-app.exec_()
