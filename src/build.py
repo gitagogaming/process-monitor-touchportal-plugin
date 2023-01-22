@@ -55,7 +55,7 @@ with open(entry, "r") as f:
 """
 If you have any required file(s) that your plugin needs, put them in this list.
 """
-ADDITIONAL_FILES = []# ["./src/start.sh", "./src/process_monitor_icon.png"]
+ADDITIONAL_FILES = ["./src/start.sh", "./src/process_monitor_icon.png"]
 
 """
 Any additional arguments to be passed to Pyinstaller. Optional.
