@@ -16,7 +16,7 @@
  You can utilize this plugin by checking if another plugin .exe is running.. and if its not then launch it.. this will make sure that if a plugin crashes that it reloads for you.
  
  
- ![image](https://user-images.githubusercontent.com/76603653/213901266-81e564e5-fcd1-4f80-96dc-4c87e9f80e8a.png)
+![image](https://user-images.githubusercontent.com/76603653/213901271-82eb4b9e-767d-44cc-a8d6-92e908c4c72e.png)
 
 
 # Features
