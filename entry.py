@@ -5,14 +5,14 @@
 
 
 __version__ = 1.1
-PLUGIN_ID = "tp.plugin.process_checker"
-PLUGIN_NAME = "Process_Checker"
+PLUGIN_ID = "tp.plugin.process_monitor"
+PLUGIN_NAME = "Process_Monitor"
 
 # Basic plugin metadata
 TP_PLUGIN_INFO = {
     'sdk': 6,
-    'version': int(float(__version__) * 100),  # TP only recognizes integer version numbers
-    'name': "Process Checker",
+    'version': int(float(__version__) * 100),  # TP only recognizes integer version numberstopo
+    'name': "Process Monitor",
     'id': PLUGIN_ID,
     "plugin_start_cmd": f"%TP_PLUGIN_FOLDER%{PLUGIN_NAME}\\{PLUGIN_NAME}.exe",
     "plugin_start_cmd_mac": f"sh %TP_PLUGIN_FOLDER%{PLUGIN_NAME}//start.sh {PLUGIN_NAME}",
@@ -40,19 +40,19 @@ TP_PLUGIN_SETTINGS = {
 TP_PLUGIN_CATEGORIES = {
     "main": {
         'id': PLUGIN_ID + ".main",
-        'name' : "Process Checker",
+        'name' : "Process Monitor",
         'imagepath': f"%TP_PLUGIN_FOLDER%{PLUGIN_NAME}\\{PLUGIN_NAME.lower()}_icon.png",
     },
     "current": {
         'id': PLUGIN_ID + ".current",
-        'name' : "Process Checker | Category 1",
+        'name' : "Process Monitor | Category 1",
     }           
                 
 }
 
 # Action(s) which this plugin supports.
 TP_PLUGIN_ACTIONS = {
-    'Process Checker': {
+    'Process Monitor': {
         'category': "main",
         'id': PLUGIN_ID + ".act.check_process",
         'name': "Check If Process is Running",
