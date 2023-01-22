@@ -29,10 +29,20 @@ GITHUB_URL = "process-monitor-touchportal-plugin"
 # DEFAULT_CONFIG_SAVE_PATH = path.join(path.dirname(path.realpath(__file__)), "color_config.json")
 
 
+class ProcessMonitorData:
+    def __init__(self):
+        self.process_monitor_choiceList = []
+        self.process_monitor_dict = {}
 
+    def add_to_choiceList(self, item):
+        self.process_monitor_choiceList.append(item)
+        
+    def add_to_dict(self, key, value):
+        self.process_monitor_dict[key] = value
 
-process_monitor_choiceList = []
-process_monitor_dict = {}
+PM = ProcessMonitorData()
+#process_monitor_choiceList = []
+#process_monitor_dict = {}
 
 class ProcessChecker:
     def __init__(self, process_name):
@@ -52,7 +62,8 @@ class ProcessChecker:
     def the_task(self, process_name, the_process):
         process_checked = self.is_running()
         
-        global process_monitor_choiceList
+        
+     #   global process_monitor_choiceList
         
       #  print("This is process checked the is_running stuff", process_checked)
         
@@ -68,21 +79,23 @@ class ProcessChecker:
             TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.status", description=f"PM | {self.process_name} - status", value="Closed", parentGroup=str(self.process_name))
             
         if process_checked:
-            process_monitor_dict[process_name] = the_process
-            the_list = list(process_monitor_dict.keys())
+            PM.add_to_dict(self.process_name, the_process)
+           # process_monitor_dict[process_name] = the_process
+            the_list = list(PM.process_monitor_dict.keys())
             the_list.append("ALL")
             
             # Checking to see if the Process monitor Choice List is the same, if so we dont update it
-            if process_monitor_choiceList != the_list:
+            if PM.process_monitor_choiceList != the_list:
                 ## submitted a PR for this to be added to the API by default
                 TPClient.choiceUpdate(choiceId=PLUGIN_ID + ".act.process_name.stop", values=the_list)
-          
-            process_monitor_choiceList = the_list
+
+            PM.add_to_choiceList(the_list)
+           # process_monitor_choiceList = the_list
             
             ## update a state showing how many values are in the list minus the "ALL" value
             TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(the_list) - 1))
             
-          #  print(f"{the_process.process_name} is running")
+            g_log.debug(f"{the_process.process_name} is running")
             
             for x in process_checked:
                 if x == 'memory_percent':
@@ -120,7 +133,6 @@ class ProcessChecker:
     def check_continuously(self, interval, process_name, the_process):
         while self.should_continue:
             g_log.debug("Checking if " + self.process_name + " is running")
-           # print("Checking if ",  self.process_name, " is running")
            
             self.the_task(process_name = process_name, the_process=the_process)
             time.sleep(interval)
@@ -184,10 +196,9 @@ def onSettingUpdate(data):
 
 @TPClient.on(TP.TYPES.onAction)
 def onAction(data):
-    global process_monitor_dict
+  #  global process_monitor_dict
     g_log.debug(f"Action: {data}")
     
-    print(data)
     
     if not (action_data := data.get('data')) or not (aid := data.get('actionId')):
         return
@@ -200,10 +211,10 @@ def onAction(data):
                 the_process = ProcessChecker(data['data'][0]['value'])
                 the_process.the_task(process_name=data['data'][0]['value'], the_process=the_process)
             else:
-                print(f"Checking every {str(data['data'][1]['value'])} seconds for {data['data'][0]['value']}")
+                g_log.info('Checking every ' + str(data['data'][1]['value']) + ' seconds for ' + data['data'][0]['value'])
                 the_process = ProcessChecker(data['data'][0]['value']) 
                 
-                if data['data'][0]['value'] not in process_monitor_dict.keys():
+                if data['data'][0]['value'] not in PM.process_monitor_dict.keys():
                     
                     th = threading.Thread(target=the_process.check_continuously, args=(int(data['data'][1]['value']), data['data'][0]['value'], the_process))
                     th.start()
@@ -216,31 +227,27 @@ def onAction(data):
         the_process = data['data'][0]['value']
         try:
             if the_process =="ALL":
-               # print("Trying to remove all processes from the dict")
-                for x in process_monitor_dict:
-            
-                  #  print("Stopping the process: ", x)
+                for x in PM.process_monitor_dict:
+                    g_log.info(f"Stopping the process monitor for: {x}")
                     if x != "ALL":
-                        process_monitor_dict[x].stop()
-                        g_log.debug(stopped_process := f"Stopping the process: {x}")
+                        PM.process_monitor_dict[x].stop()
+                        g_log.info(f"Stopping the process monitor for: {x}")
                         
-                process_monitor_dict = {}
+                PM.process_monitor_dict = {}
             else:
-                process_monitor_dict[the_process].stop()
+                PM.process_monitor_dict[the_process].stop()
                 ## delete the key from the dict
-              #  print("Trying to remove the process {} from the dict".format(the_process))
-                process_monitor_dict.pop(the_process)
+                g_log.info(f"Stopping the process monitor for: {the_process}")
+                PM.process_monitor_dict.pop(the_process)
                 
-            TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(process_monitor_dict.keys())))
-            #  del process_monitor_dict[the_process]
+            TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(PM.process_monitor_dict.keys())))
         except Exception as e:
-            print(e)
+            g_log.error(f"Error stopping the process: {e}")
     
 
 
 
 def handleSettings(settings, on_connect=False):
-    #print("Settings: " + str(settings))
     pass
 
 
@@ -343,10 +350,10 @@ def main():
             except Exception as e:
                 opts.s = True
                 print(f"Error while creating file logger, falling back to stdout. {repr(e)}")
-        if not opts.l or opts.s:
-            sh = StreamHandler(sys.stdout)
-            sh.setFormatter(fmt)
-            g_log.addHandler(sh)
+        #if not opts.l or opts.s:
+        #    sh = StreamHandler(sys.stdout)
+        #    sh.setFormatter(fmt)
+        #    g_log.addHandler(sh)
 
 
     try:
