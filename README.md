@@ -2,7 +2,7 @@
 # Process-Monitor
 - [Process Monitor](#Process-Monitor)
   - [Description](#description)
-  - [Features](#Features)
+  - [Examples](#Examples)
     - [Actions](#actions)
         - [Category: Process Monitor](#tp.plugin.process_monitor.mainactions)
     - [States](#states)
@@ -19,7 +19,11 @@
 ![image](https://user-images.githubusercontent.com/76603653/213901271-82eb4b9e-767d-44cc-a8d6-92e908c4c72e.png)
 
 
-# Features
+# Examples
+
+Check if OBS is Running
+![image](https://user-images.githubusercontent.com/76603653/213929387-419b4c19-2751-4b06-abb8-e0d74a1fed55.png)
+
 
 ## Actions
 <details open id='tp.plugin.process_monitor.mainactions'><summary><b>Category:</b> Process Monitor <small><ins>(Click to expand)</ins></small></summary><table>
