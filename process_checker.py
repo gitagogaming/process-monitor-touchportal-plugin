@@ -63,6 +63,12 @@ class ProcessChecker:
         
         
         if process_checked:
+            process_monitor_dict[data] = the_process
+            the_list = list(process_monitor_dict.keys())
+            the_list.append("ALL")
+            TPClient.choiceUpdate(choiceId=PLUGIN_ID + ".act.process_name.stop", values=the_list)
+            ## update a state showing how many values are in the list minus the "ALL" value
+            TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(the_list) - 1))
 
             print(f"{the_process.process_name} is running")
 
@@ -108,6 +114,7 @@ class ProcessChecker:
     
     def stop(self):
         self.should_continue = False
+        
 
 
 
@@ -164,6 +171,8 @@ def onConnect(data):
     if settings := data.get('settings'):
         handleSettings(settings, True)
         
+    TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue="0")
+        
 
 
 
@@ -208,7 +217,7 @@ def onSettingUpdate(data):
 #             ## use a thread to create sttes as fast as possible
 #             TPClient.createState(stateId=PLUGIN_ID + f".state.{the_process.process_name}.process_info.{x}", description=f"PM | {the_process.process_name} - {x}", value=str(process_checked.get(x, "None")), parentGroup=str(the_process.process_name))
 
-
+process_monitor_dict = {}
 
 @TPClient.on(TP.TYPES.onAction)
 def onAction(data):
@@ -228,36 +237,36 @@ def onAction(data):
                 #the_process.time_completion(data=data['data'][0]['value'], the_process=the_process)
                 the_process.the_task(data=data, the_process=the_process)
             else:
-                print(f"We are gonna check every {str(data['data'][1]['value'])} seconds")
+                print(f"Checking every {str(data['data'][1]['value'])} seconds for {data['data'][0]['value']}")
                 the_process = ProcessChecker(data['data'][0]['value']) 
                 process_checked = the_process.check_continuously(int(data['data'][1]['value']), data=data['data'][0]['value'], the_process=the_process)
-               # print(process_checked)
-
-        
-      # the_process = ProcessChecker(data['data'][0]['value']) 
-      # process_checked = the_process.get_process_info()
-      # if process_checked:
-      #     g_log.info(f"{the_process.process_name} is running")
-      #     
-      #     g_log.debug(f"Process Info: {process_checked}")
-      #     
-      #     print(process_checked)
-      #     for x in process_checked:
-      #         if x == 'memory_percent':
-      #             ## Round it to the 2nd decimal place
-      #             process_checked[x] = round(process_checked[x], 2)
-      #         
-      #         if x == 'create_time':
-      #             from datetime import datetime
-      #             create_time = process_checked.get('create_time', "None")
-      #             if create_time is not None:
-      #                 create_time_datetime = datetime.fromtimestamp(create_time)
-      #                 process_checked[x] = create_time_datetime.strftime("%m/%d/%Y [%I:%M:%S %p]")
-      #             
-      #         TPClient.createState(stateId=PLUGIN_ID + f".state.{the_process.process_name}.process_info.{x}", description=f"PM | {the_process.process_name} - {x}", value=str(process_checked.get(x, "None")), parentGroup=str(the_process.process_name))
 
 
-
+    if data['actionId'] == PLUGIN_ID +".act.stop_process.Monitor":
+        global process_monitor_dict
+        the_process = data['data'][0]['value']
+        try:
+            if the_process =="ALL":
+               # print("Trying to remove all processes from the dict")
+                for x in process_monitor_dict:
+            
+                  #  print("Stopping the process: ", x)
+                    if x != "ALL":
+                        process_monitor_dict[x].stop()
+                        g_log.debug(stopped_process := f"Stopping the process: {x}")
+                        
+                process_monitor_dict = {}
+            else:
+                process_monitor_dict[the_process].stop()
+                ## delete the key from the dict
+              #  print("Trying to remove the process {} from the dict".format(the_process))
+                process_monitor_dict.pop(the_process)
+                
+            TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(process_monitor_dict.keys())))
+            #  del process_monitor_dict[the_process]
+        except Exception as e:
+            print(e)
+    
 
 
 # Shutdown handler

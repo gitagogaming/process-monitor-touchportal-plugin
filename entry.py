@@ -4,7 +4,7 @@
 ## Entry.py - ColorPicker
 
 
-__version__ = 1.0
+__version__ = 1.1
 PLUGIN_ID = "tp.plugin.process_checker"
 PLUGIN_NAME = "Process_Checker"
 
@@ -75,21 +75,42 @@ TP_PLUGIN_ACTIONS = {
                'valueChoices': ["0","5", "10", "15", "30", "45", "60", "120", "240"]
            },
         }
-    }
+    },
+    
+    'Stop Process Monitor': {
+        'category': "main",
+        'id': PLUGIN_ID + ".act.stop_process.Monitor",
+        'name': "Stop Process Monitor for [X]",
+        'prefix': TP_PLUGIN_CATEGORIES['main']['name'],
+        'type': "communicate",
+        'tryInline': True,
+        'format': "Stop $[1] Process Monitor",
+        'data': {
+            'Process Name to Stop': {
+                'id': PLUGIN_ID + ".act.process_name.stop",
+                'type': "choice",
+                'label': "Text",
+                'default': "ALL",
+                'valueChoices': ["ALL"]
+            }
+       #       'check_per_seconds': {
+       #        'id': PLUGIN_ID + ".act.process_name.checktime",
+       #        'type': "choice",
+       #        'label': "check every x seconds",
+       #        'default': "0",
+       #        'valueChoices': ["0","5", "10", "15", "30", "45", "60", "120", "240"]
+       #    },
+        }
+    },
+    
     
 }
 
 TP_PLUGIN_STATES = {
-    'Text Name Style': {
+    'Total Monitors Running': {
         'category': "main",
-        'id': PLUGIN_ID + ".state.current_text_name_style",
-        'desc': "Color Picker: Text Name Style",
-        'default': ""
-    },
-    'Last Mouse X': {
-        'category': "main",
-        'id': PLUGIN_ID + ".state.last_mouse_x",
-        'desc': "Color Picker: Last Mouse Location - X",
+        'id': PLUGIN_ID + ".state.process_monitor.count",
+        'desc': "PM |  Total Process Monitors Running",
         'default': ""
     }
 }

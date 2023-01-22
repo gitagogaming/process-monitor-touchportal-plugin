@@ -1,6 +1,6 @@
 {
   "sdk": 6,
-  "version": 100,
+  "version": 110,
   "name": "Process Checker",
   "id": "tp.plugin.process_checker",
   "configuration": {
@@ -48,19 +48,32 @@
               ]
             }
           ]
+        },
+        {
+          "id": "tp.plugin.process_checker.act.stop_process.Monitor",
+          "name": "Stop Process Monitor for [X]",
+          "prefix": "Process Checker",
+          "type": "communicate",
+          "format": "Stop {$tp.plugin.process_checker.act.process_name.stop$} Process Monitor",
+          "tryInline": true,
+          "data": [
+            {
+              "id": "tp.plugin.process_checker.act.process_name.stop",
+              "type": "choice",
+              "label": "Text",
+              "default": "ALL",
+              "valueChoices": [
+                "ALL"
+              ]
+            }
+          ]
         }
       ],
       "states": [
         {
-          "id": "tp.plugin.process_checker.state.current_text_name_style",
+          "id": "tp.plugin.process_checker.state.process_monitor.count",
           "type": "text",
-          "desc": "Color Picker: Text Name Style",
-          "default": ""
-        },
-        {
-          "id": "tp.plugin.process_checker.state.last_mouse_x",
-          "type": "text",
-          "desc": "Color Picker: Last Mouse Location - X",
+          "desc": "PM |  Total Process Monitors Running",
           "default": ""
         }
       ],
