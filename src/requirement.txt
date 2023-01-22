@@ -1,0 +1,2 @@
+TouchPortal-API==1.7.9
+psutil==5.8.0
