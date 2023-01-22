@@ -11,8 +11,9 @@
   - [License](#license)
   
 # Description
+ Check the status of a process that is running on your computer.
 
-This documentation generated for Process Checker V100 with [Python TouchPortal SDK](https://github.com/KillerBOSS2019/TouchPortal-API).
+
 # Features
 
 ## Actions
