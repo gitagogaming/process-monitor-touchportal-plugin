@@ -2,7 +2,7 @@
 
 
 
-__version__ = 1.6
+__version__ = "1.6"
 PLUGIN_ID = "tp.plugin.process_monitor"
 PLUGIN_NAME = "Process_Monitor"
 
@@ -10,7 +10,7 @@ PLUGIN_NAME = "Process_Monitor"
 
 TP_PLUGIN_INFO = {
     'sdk': 6,
-    'version': int(float(__version__) * 100),  # TP only recognizes integer version numberstopo
+    'version': int(__version__.replace(".","")),  # TP only recognizes integer version numberstopo
     'name': "Process Monitor",
     'id': PLUGIN_ID,
     "plugin_start_cmd": f"%TP_PLUGIN_FOLDER%{PLUGIN_NAME}\\{PLUGIN_NAME}.exe",

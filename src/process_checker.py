@@ -276,6 +276,7 @@ def plugin_update_check(data):
     try:
         github_check = TP.Tools.updateCheck("GitagoGaming", GITHUB_URL).replace('v','').replace(".","")
         plugin_version = str(data['pluginVersion'])
+
         
         ## Checking to see if current version is different from github version
         if github_check != plugin_version:
