@@ -25,13 +25,13 @@ jobs:
           python "./build.py"
 
 
-      - name: Uploading asset
-        uses: actions/upload-release-asset@v3
+      - name: uploading tpp for Windows
+        uses: svenstaro/upload-release-action@v2
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: './*.tpp'
-          asset_name: 'process_checker_v100_Windows.tpp'
-          asset_content_type: 'application/octet-stream'
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: "./*.tpp"
+          overwrite: true
+          file_glob: true
 
 
 
