@@ -22,7 +22,7 @@ jobs:
           pip install -r "./src/requirements.txt"
       - name: Build tpp using tppbuild
         run: |
-          python "./build.py"
+          python "./src/build.py"
       - name: uploading tpp for Windows
         uses: svenstaro/upload-release-action@v2
         with:
@@ -51,7 +51,7 @@ jobs:
           pip3 install -r "./src/requirements.txt"
       - name: Build tpp using tppbuild
         run: |
-          python3 "./build.py"
+          python3 "./src/build.py"
       - name: uploading tpp for Ubuntu
         uses: svenstaro/upload-release-action@v2
         with:
@@ -78,7 +78,7 @@ jobs:
           pip3 install -r "./src/requirements.txt"
       - name: Build tpp using tppbuild
         run: |
-          python3 "./build.py"
+          python3 "./src/build.py"
       - name: uploading tpp for Ubuntu
         uses: svenstaro/upload-release-action@v2
         with:
