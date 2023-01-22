@@ -55,6 +55,10 @@ class ProcessChecker:
       #  print("This is process checked the is_running stuff", process_checked)
         
         if process_checked == False:
+            ## Setting Status to blank so it will trigger every time its checked
+            
+            TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.status", description=f"PM | {self.process_name} - status", value="", parentGroup=str(self.process_name))
+            
             for x in ['pid', 'username', 'cpu_percent', 'memory_percent', 'cmdline', 'create_time']:
                 TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.{x}", description=f"PM | {self.process_name} - {x}", value="", parentGroup=str(self.process_name))
             
