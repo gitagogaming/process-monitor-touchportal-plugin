@@ -173,7 +173,7 @@ class TPClientClass:
 
 
 
-TPC = TPClientClass(PLUGIN_ID)
+#TPC = TPClientClass(PLUGIN_ID)
 
 # Crate the global logger
 #g_log = getLogger()
@@ -377,5 +377,6 @@ def main():
 
 
 if __name__ == "__main__":
+    TPC = TPClientClass(PLUGIN_ID)
     PM = ProcessMonitorData()
     sys.exit(main())
