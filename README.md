@@ -1,12 +1,12 @@
 
-# Process-Checker
-- [Process Checker](#Process-Checker)
+# Process-Monitor
+- [Process Monitor](#Process-Monitor)
   - [Description](#description)
   - [Features](#Features)
     - [Actions](#actions)
-        - [Category: Process Checker](#tp.plugin.process_checker.mainactions)
+        - [Category: Process Monitor](#tp.plugin.process_monitor.mainactions)
     - [States](#states)
-        - [Category: Process Checker](#tp.plugin.process_checker.mainstates)
+        - [Category: Process Monitor](#tp.plugin.process_monitor.mainstates)
   - [Bugs and Support](#bugs-and-suggestion)
   - [License](#license)
   
@@ -15,11 +15,10 @@
  
  You can utilize this plugin by checking if another plugin .exe is running.. and if its not then launch it.. this will make sure that if a plugin crashes that it reloads for you.
 
-
 # Features
 
 ## Actions
-<details open id='tp.plugin.process_checker.mainactions'><summary><b>Category:</b> Process Checker <small><ins>(Click to expand)</ins></small></summary><table>
+<details open id='tp.plugin.process_monitor.mainactions'><summary><b>Category:</b> Process Monitor <small><ins>(Click to expand)</ins></small></summary><table>
 <tr valign='buttom'><th>Action Name</th><th>Description</th><th>Format</th><th nowrap>Data<br/><div align=left><sub>choices/default (in bold)</th><th>On<br/>Hold</sub></div></th></tr>
 <tr valign='top'><td>Check If Process is Running</td><td> </td><td>Get Process Status [1] - Every [2] Seconds</td><td><ol start=1><li>Type: text &nbsp; 
 Default: <b>TouchPortal.exe</b></li>
@@ -27,17 +26,20 @@ Default: <b>TouchPortal.exe</b></li>
 Default: <b>0</b> Possible choices: ['0', '5', '10', '15', '30', '45', '60', '120', '240']</li>
 </ol></td>
 <td align=center>No</td>
+<tr valign='top'><td>Stop Process Monitor for [X]</td><td> </td><td>Stop [1] Process Monitor</td><td><ol start=1><li>Type: choice &nbsp; 
+Default: <b>ALL</b> Possible choices: ['ALL']</li>
+</ol></td>
+<td align=center>No</td>
 </tr></table></details>
 <br>
 
 ## States
-<details open id='tp.plugin.process_checker.mainstates'><summary><b>Category:</b> Process Checker <small><ins>(Click to expand)</ins></small></summary>
+<details open id='tp.plugin.process_monitor.mainstates'><summary><b>Category:</b> Process Monitor <small><ins>(Click to expand)</ins></small></summary>
 
 
 | Id | Description | DefaultValue | parentGroup |
 | --- | --- | --- | --- |
-| .state.current_text_name_style | Color Picker: Text Name Style |  |   |
-| .state.last_mouse_x | Color Picker: Last Mouse Location - X |  |   |
+| .state.process_monitor.count | PM |  Total Process Monitors Running |  |   |
 </details>
 
 <br>
