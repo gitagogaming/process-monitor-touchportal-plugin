@@ -8,13 +8,14 @@ from logging import (getLogger, Formatter, NullHandler, FileHandler, StreamHandl
 
 from os import path
 import psutil
+import threading
 import sys
 import webbrowser
 import time
 
-PLUGIN_NAME = "Process Checker"
-PLUGIN_ID = "tp.plugin.process_checker"
-GITHUB_URL = "process-checker-touchportal-plugin"
+PLUGIN_NAME = "Process Monitor"
+PLUGIN_ID = "tp.plugin.process_monitor"
+GITHUB_URL = "process-monitor-touchportal-plugin"
 # DEFAULT_CONFIG_SAVE_PATH = path.join(path.dirname(path.realpath(__file__)), "color_config.json")
 
 def handleSettings(settings, on_connect=False):
@@ -239,7 +240,11 @@ def onAction(data):
             else:
                 print(f"Checking every {str(data['data'][1]['value'])} seconds for {data['data'][0]['value']}")
                 the_process = ProcessChecker(data['data'][0]['value']) 
-                process_checked = the_process.check_continuously(int(data['data'][1]['value']), data=data['data'][0]['value'], the_process=the_process)
+
+
+                th = threading.Thread(target=the_process.check_continuously, args=(int(data['data'][1]['value']), data['data'][0]['value'], the_process))
+                th.start()
+               # process_checked = the_process.check_continuously(int(data['data'][1]['value']), data=data['data'][0]['value'], the_process=the_process)
 
 
     if data['actionId'] == PLUGIN_ID +".act.stop_process.Monitor":

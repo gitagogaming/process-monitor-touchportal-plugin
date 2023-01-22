@@ -4,7 +4,7 @@
 ## Entry.py - ColorPicker
 
 
-__version__ = 1.1
+__version__ = 1.2
 PLUGIN_ID = "tp.plugin.process_monitor"
 PLUGIN_NAME = "Process_Monitor"
 
