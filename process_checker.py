@@ -1,6 +1,9 @@
 #process checker
 
 
+## BUGS
+## when checking for a process if its NOT loaded, then no states are made or mention that its not running.. but if its runing then you close it updates as expected
+
 
 import TouchPortalAPI as TP
 from argparse import ArgumentParser
@@ -47,47 +50,46 @@ class ProcessChecker:
         print("Task completed in: ", completion_time, " seconds")
 
 
-
     def the_task(self, data, the_process):
-        #print("this is data, {} and this is process {}".format(data, the_process))
-        #the_process = ProcessChecker(data) 
         process_checked = self.is_running()
         
+        
         if process_checked == False:
-          #  print(self.process_name + " is not running")
             for x in ['pid', 'username', 'cpu_percent', 'memory_percent', 'cmdline', 'create_time']:
                 TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.{x}", description=f"PM | {self.process_name} - {x}", value="", parentGroup=str(self.process_name))
             
+            process_monitor_dict[data] = the_process
+            TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(process_monitor_dict.keys())))
+            
             TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.status", description=f"PM | {self.process_name} - status", value="Closed", parentGroup=str(self.process_name))
             
-      # print("this is process checked {}".format(process_checked))
-        
         
         if process_checked:
             process_monitor_dict[data] = the_process
             the_list = list(process_monitor_dict.keys())
             the_list.append("ALL")
+            
             TPClient.choiceUpdate(choiceId=PLUGIN_ID + ".act.process_name.stop", values=the_list)
+            
             ## update a state showing how many values are in the list minus the "ALL" value
             TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(the_list) - 1))
-
+            
             print(f"{the_process.process_name} is running")
-
+            
             for x in process_checked:
                 if x == 'memory_percent':
                     ## Round it to the 2nd decimal place
                     process_checked[x] = round(process_checked[x], 2)
-
+                    
                 if x == 'create_time':
                     from datetime import datetime
                     create_time = process_checked.get('create_time', "None")
                     if create_time is not None:
                         create_time_datetime = datetime.fromtimestamp(create_time)
                         process_checked[x] = create_time_datetime.strftime("%m/%d/%Y [%I:%M:%S %p]")
-
+                        
                 ## use a thread to create sttes as fast as possible
                 TPClient.createState(stateId=PLUGIN_ID + f".state.{the_process.process_name}.process_info.{x}", description=f"PM | {the_process.process_name} - {x}", value=str(process_checked.get(x, "None")), parentGroup=str(the_process.process_name))
-
 
 
     
@@ -101,7 +103,6 @@ class ProcessChecker:
         return False
     
     
-    
     def check_continuously(self, interval, data, the_process):
         while self.should_continue:
             g_log.debug("Checking if " + self.process_name + " is running")
@@ -110,7 +111,7 @@ class ProcessChecker:
             time.sleep(interval)
             
         return False
-
+    
     
     
     def stop(self):
@@ -184,40 +185,6 @@ def onSettingUpdate(data):
         handleSettings(settings, False)
 
 
-# import time
-# 
-# def time_completion(data, the_process):
-#     start_time = time.time()
-#     the_task(data=data, the_process=the_process)
-#     end_time = time.time()
-#     completion_time = end_time - start_time
-#     print("Task completed in: ", completion_time, " seconds")
-# 
-# 
-# 
-# def the_task(data, the_process):
-#     
-#     print("this is data, {} and this is process {}".format(data, the_process))
-#     #the_process = ProcessChecker(data) 
-#     process_checked = the_process.is_running()
-#     if process_checked:
-#         g_log.info(f"{the_process.process_name} is running")
-#         
-#         for x in process_checked:
-#             if x == 'memory_percent':
-#                 ## Round it to the 2nd decimal place
-#                 process_checked[x] = round(process_checked[x], 2)
-#             
-#             if x == 'create_time':
-#                 from datetime import datetime
-#                 create_time = process_checked.get('create_time', "None")
-#                 if create_time is not None:
-#                     create_time_datetime = datetime.fromtimestamp(create_time)
-#                     process_checked[x] = create_time_datetime.strftime("%m/%d/%Y [%I:%M:%S %p]")
-#                     
-#             ## use a thread to create sttes as fast as possible
-#             TPClient.createState(stateId=PLUGIN_ID + f".state.{the_process.process_name}.process_info.{x}", description=f"PM | {the_process.process_name} - {x}", value=str(process_checked.get(x, "None")), parentGroup=str(the_process.process_name))
-
 process_monitor_dict = {}
 
 @TPClient.on(TP.TYPES.onAction)
@@ -236,15 +203,17 @@ def onAction(data):
         if data['data'][1]['value']:
             if data['data'][1]['value'] == "0":
                 the_process = ProcessChecker(data['data'][0]['value']) 
-                #the_process.time_completion(data=data['data'][0]['value'], the_process=the_process)
                 the_process.the_task(data=data, the_process=the_process)
             else:
                 print(f"Checking every {str(data['data'][1]['value'])} seconds for {data['data'][0]['value']}")
                 the_process = ProcessChecker(data['data'][0]['value']) 
-
+                
                 if data['data'][0]['value'] not in process_monitor_dict.keys():
+                    
                     th = threading.Thread(target=the_process.check_continuously, args=(int(data['data'][1]['value']), data['data'][0]['value'], the_process))
                     th.start()
+                    
+                    
                # process_checked = the_process.check_continuously(int(data['data'][1]['value']), data=data['data'][0]['value'], the_process=the_process)
 
 
