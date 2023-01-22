@@ -310,7 +310,6 @@ def onShutdown(data):
 
 ## The Main + Logging System
 def main():
-    global g_log
     ret = 0  # sys.exit() value
 
     # handle CLI arguments
