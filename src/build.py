@@ -28,7 +28,7 @@ PLUGIN_ENTRY: This can be either path to entry.tp or path to a python file that 
 Note if you pass in a entry.tp, tppbuild will automatically validate the json. If you pass in a python file, it will
 build entry.tp & validate it for you. If validation fails, tppbuild will exit.
 """
-PLUGIN_ENTRY = "src/entry.tp"  # Here we just use the same file as the plugin's main code since that contains all the definitions for entry.tp.
+PLUGIN_ENTRY = "entry.tp"  # Here we just use the same file as the plugin's main code since that contains all the definitions for entry.tp.
 
 PLUGIN_ENTRY_INDENT = 2
 
