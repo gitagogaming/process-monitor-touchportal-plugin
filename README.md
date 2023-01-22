@@ -14,6 +14,10 @@
  Check the status of a process that is running on your computer.
  
  You can utilize this plugin by checking if another plugin .exe is running.. and if its not then launch it.. this will make sure that if a plugin crashes that it reloads for you.
+ 
+ 
+ ![image](https://user-images.githubusercontent.com/76603653/213901266-81e564e5-fcd1-4f80-96dc-4c87e9f80e8a.png)
+
 
 # Features
 
