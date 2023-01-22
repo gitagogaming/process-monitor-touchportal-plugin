@@ -222,6 +222,7 @@ process_monitor_dict = {}
 
 @TPClient.on(TP.TYPES.onAction)
 def onAction(data):
+    global process_monitor_dict
     g_log.debug(f"Action: {data}")
     
     print(data)
@@ -241,14 +242,13 @@ def onAction(data):
                 print(f"Checking every {str(data['data'][1]['value'])} seconds for {data['data'][0]['value']}")
                 the_process = ProcessChecker(data['data'][0]['value']) 
 
-
-                th = threading.Thread(target=the_process.check_continuously, args=(int(data['data'][1]['value']), data['data'][0]['value'], the_process))
-                th.start()
+                if data['data'][0]['value'] not in process_monitor_dict.keys():
+                    th = threading.Thread(target=the_process.check_continuously, args=(int(data['data'][1]['value']), data['data'][0]['value'], the_process))
+                    th.start()
                # process_checked = the_process.check_continuously(int(data['data'][1]['value']), data=data['data'][0]['value'], the_process=the_process)
 
 
     if data['actionId'] == PLUGIN_ID +".act.stop_process.Monitor":
-        global process_monitor_dict
         the_process = data['data'][0]['value']
         try:
             if the_process =="ALL":
