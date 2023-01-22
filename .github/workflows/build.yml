@@ -28,7 +28,7 @@ jobs:
       - name: uploading tpp for Windows
         uses: svenstaro/upload-release-action@v2
         with:
-          repo_token: ${{ secrets.MY_CUSTOM_SECRET }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: "./*.tpp"
           overwrite: true
           file_glob: true
