@@ -8,7 +8,7 @@ from TouchPortalAPI import tppbuild
 """
 PLUGIN_MAIN: This lets tppbuild know where your main python plugin file is located so it will know which file to compile.
 """
-PLUGIN_MAIN = "process_checker.py"
+PLUGIN_MAIN = "./src/process_checker.py"
 
 """
 PLUGIN_EXE_NAME: This defines what you want your plugin executable to be named. tppbuild will also use this for the .tpp file in the format:
@@ -28,7 +28,7 @@ PLUGIN_ENTRY: This can be either path to entry.tp or path to a python file that 
 Note if you pass in a entry.tp, tppbuild will automatically validate the json. If you pass in a python file, it will
 build entry.tp & validate it for you. If validation fails, tppbuild will exit.
 """
-PLUGIN_ENTRY = "entry.tp"  # Here we just use the same file as the plugin's main code since that contains all the definitions for entry.tp.
+PLUGIN_ENTRY = "./src/entry.tp"  # Here we just use the same file as the plugin's main code since that contains all the definitions for entry.tp.
 
 """
 """
