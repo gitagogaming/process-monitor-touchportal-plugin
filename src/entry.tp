@@ -1,6 +1,6 @@
 {
   "sdk": 6,
-  "version": 16,
+  "version": 170,
   "name": "Process Monitor",
   "id": "tp.plugin.process_monitor",
   "configuration": {
@@ -89,5 +89,18 @@
       "connectors": []
     }
   ],
-  "settings": []
+  "settings": [
+    {
+      "name": "The Programs to Monitor (comma separated)",
+      "type": "text",
+      "default": "",
+      "readOnly": false
+    },
+    {
+      "name": "Check every x seconds",
+      "type": "text",
+      "default": "5",
+      "readOnly": false
+    }
+  ]
 }

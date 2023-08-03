@@ -2,7 +2,7 @@
 
 
 
-__version__ = "1.6"
+__version__ = "1.7.0"
 PLUGIN_ID = "tp.plugin.process_monitor"
 PLUGIN_NAME = "Process_Monitor"
 
@@ -26,13 +26,17 @@ TP_PLUGIN_INFO = {
 
 
 TP_PLUGIN_SETTINGS = {
-   #'Color Names': {
-   #    'name': "Color Names - Can be changed via plugin actions",
-   #    'type': "text",
-   #    'default': "Basic",
-   #    'readOnly': True,
-   #    'value': None  # we can optionally use the settings struct to hold the current value
-   #}
+   'Auto Monitor Programs (comma seperated)': {
+       'name': "The Programs to Monitor (comma separated)",
+       'type': "text",
+       'default': "",
+       'value': None  # we can optionally use the settings struct to hold the current value
+   },
+    'Auto Monitor Programs - Check every x seconds': {
+        'name': "Check every x seconds",
+        'type': "text",
+        'default': "5"
+    }
 }
 
 TP_PLUGIN_CATEGORIES = {
@@ -58,7 +62,7 @@ TP_PLUGIN_ACTIONS = {
         'prefix': TP_PLUGIN_CATEGORIES['main']['name'],
         'type': "communicate",
         'tryInline': True,
-        'format': "Get Process Status $[1] - Every $[2] Seconds",
+        'format': "Get Process Status $[1] - Every $[2] Seconds", #   |   Process must be visible?:$[3]",
         'data': {
             'text_color': {
                 'id': PLUGIN_ID + ".act.process_name",
@@ -73,6 +77,14 @@ TP_PLUGIN_ACTIONS = {
                'default': "0",
                'valueChoices': ["0","5", "10", "15", "30", "45", "60", "120", "240"]
            },
+         #  'must be visible': {
+         #     'id': PLUGIN_ID + ".act.process_name.visible",
+         #     'type': "choice",
+         #     'label': "check if window is visible, useful for browsers and other background processes",
+         #     'default': "False",
+         #     'valueChoices': ["True","False"]
+         # },
+              
         }
     },
     

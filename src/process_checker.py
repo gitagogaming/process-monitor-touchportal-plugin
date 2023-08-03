@@ -2,12 +2,9 @@
 # Created by @Gitago for TouchPortal
 # Jan, 2023
 
-## If users ever want multiple PIDS for the .exe we can make an action take it as an argument and then when user selects .exe it will show all the PIDs for that .exe and user can select which one they want to monitor
-
-
+## If users ever want multiple PIDS for the .exe we can make an action take it as an argument and then when user selects .exe it will show all the PIDs for that .exe and user can select which one they want to monito
 ## BUGS
 ## when process is checked with a 0 timer it is still counting as an active monitor although its only checking it once and stopping..
-
 ## when checking for a process if its NOT loaded, then no states are made or mention that its not running.. but if its runing then you close it updates as expected
 # when stopping a monitor it doesnt seem to clear the length of total?
 
@@ -24,11 +21,11 @@ import time
 import requests
 import base64
 import time
-
+from datetime import datetime
 PLUGIN_NAME = "Process Monitor"
 PLUGIN_ID = "tp.plugin.process_monitor"
 GITHUB_URL = "process-monitor-touchportal-plugin"
-# DEFAULT_CONFIG_SAVE_PATH = path.join(path.dirname(path.realpath(__file__)), "color_config.json")
+
 
 
 class ProcessMonitorData:
@@ -69,7 +66,7 @@ class ProcessChecker:
                 TPC.TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.{x}", description=f"PM | {self.process_name} - {x}", value="", parentGroup=str(self.process_name))
             
             # Updating Status to "Closed" since the process appears to not be running
-            TPC.TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.status", description=f"PM | {self.process_name} - status", value="Closed", parentGroup=str(self.process_name))
+            TPC.TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.status", description=f"PM | {self.process_name} - status", value="closed", parentGroup=str(self.process_name))
             
         if process_checked:
             PM.add_to_dict(self.process_name, the_process)
@@ -83,7 +80,7 @@ class ProcessChecker:
                 TPC.TPClient.choiceUpdate(choiceId=PLUGIN_ID + ".act.process_name.stop", values=the_list)
 
             PM.add_to_choiceList(the_list)
-           # process_monitor_choiceList = the_list
+            # process_monitor_choiceList = the_list
             
             ## update a state showing how many values are in the list minus the "ALL" value
             TPC.TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(the_list) - 1))
@@ -96,28 +93,20 @@ class ProcessChecker:
                     process_checked[x] = round(process_checked[x], 2)
                     
                 if x == 'create_time':
-                    from datetime import datetime
                     create_time = process_checked.get('create_time', "None")
                     if create_time is not None:
                         create_time_datetime = datetime.fromtimestamp(create_time)
                         process_checked[x] = create_time_datetime.strftime("%m/%d/%Y [%I:%M:%S %p]")
-                        
-                ## use a thread to create sttes as fast as possible
+                
                 TPC.TPClient.createState(stateId=PLUGIN_ID + f".state.{the_process.process_name}.process_info.{x}", description=f"PM | {the_process.process_name} - {x}", value=str(process_checked.get(x, "None")), parentGroup=str(the_process.process_name))
                 
                 
-    def is_running(self):
-        
+    def is_running(self): 
         for process in psutil.process_iter():
             if process.name().lower() == self.process_name.lower():
                 process_Info = process.as_dict(attrs=['pid', 'name', 'username', 'cpu_percent', 'memory_percent', 'cmdline', 'create_time', 'status'])
                         #    print("Before joiing the cmdline: ", process_checked)
                 process_Info["cmdline"] = ' '.join(process_Info["cmdline"])
-            
-           # print("After joiing the cmdline: ", process_checked)
-             #  memory_info = process.memory_info().rss
-             #  memory_mb = memory_info / 1048576
-             #  process_Info['memory_MB'] = memory_mb
                 return process_Info
         
         return False
@@ -125,31 +114,15 @@ class ProcessChecker:
     
     def check_continuously(self, interval, process_name, the_process):
         while self.should_continue:
-            TPC.g_log.debug("Checking if " + self.process_name + " is running")
-           
+            TPC.g_log.debug("Checking if " + self.process_name + " is running")         
             self.the_task(process_name = process_name, the_process=the_process)
-            time.sleep(interval)
-            
+            time.sleep(interval)      
         return False
     
     
     def stop(self):
         self.should_continue = False
 
-
-
-##  ### The TP Client
-##  try:
-##      TPClient = TP.Client(
-##          pluginId = PLUGIN_ID,
-##          sleepPeriod = 0.05,
-##          autoClose = True,
-##          checkPluginId = True,
-##          maxWorkers = 4,
-##          updateStatesOnBroadcast = False,
-##      )
-##  except Exception as e:
-##      sys.exit(f"Could not create TP Client, exiting. Error was:\n{repr(e)}")
 class TPClientClass:
     def __init__(self, pluginId, sleepPeriod=0.05, autoClose=True, checkPluginId=True, maxWorkers=4, updateStatesOnBroadcast=False):
         self.pluginId = pluginId
@@ -175,11 +148,6 @@ class TPClientClass:
 
 TPC = TPClientClass(PLUGIN_ID)
 
-# Crate the global logger
-#g_log = getLogger()
-
-
-
 @TPC.TPClient.on(TP.TYPES.onNotificationOptionClicked)
 def check_noti(data):
     if data['optionId'] == PLUGIN_ID+ '.update.download':
@@ -188,15 +156,32 @@ def check_noti(data):
         webbrowser.open(url, new=0, autoraise=True)
 
 
-
 @TPC.TPClient.on(TP.TYPES.onConnect)
 def onConnect(data):
     TPC.g_log.info(f"Connected to TP v{data.get('tpVersionString', '?')}, plugin v{data.get('pluginVersion', '?')}.")
     TPC.g_log.debug(f"Connection: {data}")
     if settings := data.get('settings'):
         handleSettings(settings, True)
-        
+
+    if settings:#('Auto Monitor Programs (comma seperated)') != "":
+        auto_monitor_programs = settings[0]['The Programs to Monitor (comma separated)']
+
+        if auto_monitor_programs != "":
+            auto_monitor_programs = auto_monitor_programs.split(",")
+            every_X_seconds = 5 ## default to 5 seconds unless specified in settings
+            if settings[1]['Check every x seconds'] != "":
+                every_X_seconds = int(settings[1]['Check every x seconds'])
+
+            for x in auto_monitor_programs:
+                TPC.g_log.info(f"Checking every 5 seconds for {x}")
+                the_process = ProcessChecker(x)
+                if x not in PM.process_monitor_dict.keys():
+                    th = threading.Thread(target=the_process.check_continuously, args=(every_X_seconds , x, the_process))
+                    th.start()
+
+
     plugin_update_check(data)
+
     TPC.TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue="0")
         
 
@@ -207,14 +192,31 @@ def onSettingUpdate(data):
     if (settings := data.get('values')):
         handleSettings(settings, False)
 
+    
+    if settings:#('Auto Monitor Programs (comma seperated)') != "":
+        auto_monitor_programs = settings[0]['The Programs to Monitor (comma separated)']
+
+        if auto_monitor_programs != "":
+            auto_monitor_programs = auto_monitor_programs.split(",")
+            every_X_seconds = 5 ## default to 5 seconds unless specified in settings
+            if settings[1]['Check every x seconds'] != "":
+                every_X_seconds = int(settings[1]['Check every x seconds'])
+
+            for x in auto_monitor_programs:
+                TPC.g_log.info(f"Checking every 5 seconds for {x}")
+                the_process = ProcessChecker(x)
+                if x not in PM.process_monitor_dict.keys():
+                    th = threading.Thread(target=the_process.check_continuously, args=(every_X_seconds , x, the_process))
+                    th.start()
+
+                    
+
 
 
 
 @TPC.TPClient.on(TP.TYPES.onAction)
 def onAction(data):
     TPC.g_log.debug(f"Action: {data}")
-    
-    
     if not (action_data := data.get('data')) or not (aid := data.get('actionId')):
         return
     
@@ -232,11 +234,8 @@ def onAction(data):
                 if data['data'][0]['value'] not in PM.process_monitor_dict.keys():
                     
                     th = threading.Thread(target=the_process.check_continuously, args=(int(data['data'][1]['value']), data['data'][0]['value'], the_process))
-                    th.start()
-                    
-                    
-               # process_checked = the_process.check_continuously(int(data['data'][1]['value']), data=data['data'][0]['value'], the_process=the_process)
-        
+                    th.start()             
+
         
     if data['actionId'] == PLUGIN_ID +".act.stop_process.Monitor":
         the_process = data['data'][0]['value']
@@ -259,8 +258,6 @@ def onAction(data):
         except Exception as e:
             TPC.g_log.error(f"Error stopping the process: {e}")
     
-
-
 
 def handleSettings(settings, on_connect=False):
     pass
@@ -296,20 +293,12 @@ def plugin_update_check(data):
         TPC.g_log.error("[UPDATE CHECK] Something went wrong checking update", e)
 
 
-
-
 # Shutdown handler
 @TPC.TPClient.on(TP.TYPES.onShutdown)
 def onShutdown(data):
     TPC.g_log.info('Received shutdown event from TP Client.')
 
 
-
-
-
-
-
-## The Main + Logging System
 def main():
     ret = 0  # sys.exit() value
 
@@ -370,13 +359,45 @@ def main():
         ret = -1
     finally:
         TPC.TPClient.disconnect()
-
     del TPC.TPClient
-
-   # TPC.g_log.info(f"{TP_PLUGIN_INFO['name']} stopped.")
     return ret
 
 
 if __name__ == "__main__":
     PM = ProcessMonitorData()
     sys.exit(main())
+    
+
+
+#  import win32gui
+#  import win32process
+#  import psutil
+#  
+#  process_info = None
+#  ### have to make a special 'check' in the plugin action to see if process is 'visible' rather than running..
+#  ## this will help people determine if a browser source is actually open or not.. this needs to be optional as if we take out iswindowvisible then it says msedge is open even though its not..
+#  def callback(hwnd, app_processes):
+#      global process_info
+#      if win32gui.IsWindowVisible(hwnd):
+#          try:
+#              pid = win32process.GetWindowThreadProcessId(hwnd)[1]
+#              process = psutil.Process(pid)
+#              if process.name().lower() in app_processes:
+#                  process_info = process.as_dict(attrs=['num_threads','pid', 'name', 'username', 'cpu_percent', 'memory_percent', 'cmdline', 'create_time', 'status', 'cwd', 'exe'])
+#                  app_processes[process.name().lower()] = True
+#               
+#          except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+#              pass
+#  
+#  # define the process names for different browsers
+#  app_process = {'msedge.exe': False}
+#  
+#  # loop through all the windows and check if any belong to the browser process
+#  win32gui.EnumWindows(callback, app_process)
+#  
+#  # check if any of the browser processes have an open window
+#  for process_name, has_window in app_process.items():
+#      if has_window:
+#          print(f"Yes, a {process_name} window is open")
+#      else:
+#          print(f"No, a {process_name} window is not open")
