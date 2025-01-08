@@ -26,6 +26,7 @@ PLUGIN_NAME = "Process Monitor"
 PLUGIN_ID = "tp.plugin.process_monitor"
 GITHUB_URL = "process-monitor-touchportal-plugin"
 
+DEFAULT_STATES = ['pid', 'username', 'cpu_percent', 'memory_percent', 'cmdline', 'create_time', 'status']
 
 
 class ProcessMonitorData:
@@ -54,58 +55,90 @@ class ProcessChecker:
         print("Task completed in: ", completion_time, " seconds")
 
 
+    def setClosedState(self):
+        stateList = []
+        for x in DEFAULT_STATES:
+            if x == 'status':
+            # Updating Status to "Closed" since the process appears to not be running
+                stateList.append({
+                    "id": PLUGIN_ID + f".state.{self.process_name}.process_info.status",
+                    "desc": f"PM | {self.process_name} - status",
+                    "value":"closed",
+                    'parentGroup':str(self.process_name)
+                })
+            else:
+                stateList.append({
+                    "id": PLUGIN_ID + f".state.{self.process_name}.process_info.{x}",
+                    "desc": f"PM | {self.process_name} - {x}",
+                    "value":"", 'parentGroup':str(self.process_name),
+                    "parentGroup": str(self.process_name)
+                    })
+
+            TPC.TPClient.createStateMany(stateList)
+
+    
+    def setRunningState(self, process_checked):
+
+        print("Process Checked: ", process_checked)
+        stateList = []
+        for x in process_checked:
+            if x == 'memory_percent':
+                ## Round it to the 2nd decimal place
+                process_checked[x] = round(process_checked[x], 2)
+                
+            if x == 'create_time':
+                create_time = process_checked.get('create_time', "None")
+                if create_time is not None:
+                    create_time_datetime = datetime.fromtimestamp(create_time)
+                    process_checked[x] = create_time_datetime.strftime("%m/%d/%Y [%I:%M:%S %p]")
+
+            stateList.append({
+                "id": PLUGIN_ID + f".state.{self.process_name}.process_info.{x}",
+                "desc": f"PM | {self.process_name} - {x}",
+                "value":str(process_checked.get(x, "None")),
+                "parentGroup": str(self.process_name)
+            })
+                    
+        TPC.TPClient.createStateMany(stateList)
+        
+
+    
+    def addToChoiceList(self, the_process):
+        PM.add_to_dict(self.process_name, the_process)
+        choice_list = list(PM.process_monitor_dict.keys())
+        choice_list.append("ALL")
+        
+        # Checking to see if the Process monitor Choice List is the same, if so we dont update it
+        if PM.process_monitor_choiceList != choice_list:
+            ## submitted a PR for this to be added to the API by default
+            TPC.TPClient.choiceUpdate(choiceId=PLUGIN_ID + ".act.process_name.stop", values=choice_list)
+
+        PM.add_to_choiceList(choice_list)
+        # process_monitor_choiceList = the_list
+        
+        ## update a state showing how many values are in the list minus the "ALL" value
+        TPC.TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(choice_list) - 1))
+
+
     def the_task(self, process_name, the_process):
         process_checked = self.is_running()
+        print("Process Checked: ", process_checked)
         
         if process_checked == False:
-            ## Setting Status to blank so it will trigger every time its checked
-            
-            TPC.TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.status", description=f"PM | {self.process_name} - status", value="", parentGroup=str(self.process_name))
-            
-            for x in ['pid', 'username', 'cpu_percent', 'memory_percent', 'cmdline', 'create_time']:
-                TPC.TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.{x}", description=f"PM | {self.process_name} - {x}", value="", parentGroup=str(self.process_name))
-            
-            # Updating Status to "Closed" since the process appears to not be running
-            TPC.TPClient.createState(stateId=PLUGIN_ID + f".state.{self.process_name}.process_info.status", description=f"PM | {self.process_name} - status", value="closed", parentGroup=str(self.process_name))
+            self.setClosedState()
             
         if process_checked:
-            PM.add_to_dict(self.process_name, the_process)
-           # process_monitor_dict[process_name] = the_process
-            the_list = list(PM.process_monitor_dict.keys())
-            the_list.append("ALL")
-            
-            # Checking to see if the Process monitor Choice List is the same, if so we dont update it
-            if PM.process_monitor_choiceList != the_list:
-                ## submitted a PR for this to be added to the API by default
-                TPC.TPClient.choiceUpdate(choiceId=PLUGIN_ID + ".act.process_name.stop", values=the_list)
+            self.addToChoiceList(the_process)
+            self.setRunningState(process_checked)
 
-            PM.add_to_choiceList(the_list)
-            # process_monitor_choiceList = the_list
-            
-            ## update a state showing how many values are in the list minus the "ALL" value
-            TPC.TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(the_list) - 1))
-            
             TPC.g_log.debug(f"{the_process.process_name} is running")
             
-            for x in process_checked:
-                if x == 'memory_percent':
-                    ## Round it to the 2nd decimal place
-                    process_checked[x] = round(process_checked[x], 2)
-                    
-                if x == 'create_time':
-                    create_time = process_checked.get('create_time', "None")
-                    if create_time is not None:
-                        create_time_datetime = datetime.fromtimestamp(create_time)
-                        process_checked[x] = create_time_datetime.strftime("%m/%d/%Y [%I:%M:%S %p]")
-                
-                TPC.TPClient.createState(stateId=PLUGIN_ID + f".state.{the_process.process_name}.process_info.{x}", description=f"PM | {the_process.process_name} - {x}", value=str(process_checked.get(x, "None")), parentGroup=str(the_process.process_name))
                 
                 
     def is_running(self): 
         for process in psutil.process_iter():
             if process.name().lower() == self.process_name.lower():
-                process_Info = process.as_dict(attrs=['pid', 'name', 'username', 'cpu_percent', 'memory_percent', 'cmdline', 'create_time', 'status'])
-                        #    print("Before joiing the cmdline: ", process_checked)
+                process_Info = process.as_dict(attrs=DEFAULT_STATES)
                 process_Info["cmdline"] = ' '.join(process_Info["cmdline"])
                 return process_Info
         
@@ -256,7 +289,7 @@ def onAction(data):
                 
             TPC.TPClient.stateUpdate(stateId=PLUGIN_ID + ".state.process_monitor.count", stateValue=str(len(PM.process_monitor_dict.keys())))
         except Exception as e:
-            TPC.g_log.error(f"Error stopping the process: {e}")
+            TPC.g_log.error(f"Error stopping the process: {e} - Current Monitors: {PM.process_monitor_dict}")
     
 
 def handleSettings(settings, on_connect=False):

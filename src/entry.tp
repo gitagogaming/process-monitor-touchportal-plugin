@@ -1,6 +1,6 @@
 {
   "sdk": 6,
-  "version": 170,
+  "version": 171,
   "name": "Process Monitor",
   "id": "tp.plugin.process_monitor",
   "configuration": {

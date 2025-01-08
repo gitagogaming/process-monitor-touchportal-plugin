@@ -2,7 +2,7 @@
 
 
 
-__version__ = "1.7.0"
+__version__ = "1.7.1"
 PLUGIN_ID = "tp.plugin.process_monitor"
 PLUGIN_NAME = "Process_Monitor"
 
