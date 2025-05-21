@@ -1,3 +1,2 @@
-TouchPortal-API==1.7.9
+TouchPortal-API==1.7.10
 psutil==7.0.0
-pyee==8.2.2
