@@ -1,3 +1,2 @@
 TouchPortal-API==1.7.9
 psutil==7.0.0
-pyee==13.0.0
